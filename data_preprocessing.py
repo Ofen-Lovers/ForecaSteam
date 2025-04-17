@@ -132,7 +132,18 @@ supported_df = pd.DataFrame.sparse.from_spmatrix(supported_sparse, columns=[f"La
 df = pd.concat([df, supported_df], axis=1)
 df.drop(columns=['Supported languages'], inplace=True)
 
-# Final check
-print("\nFinal shape:", df.shape)
-print("Columns now:", df.columns.tolist())
+# Check for Missing Values
+# print("\nFinal shape:", df.shape)
+# print("Columns now:", df.columns.tolist())
 print("\nTotal missing values remaining:", df.isnull().sum().sum())
+
+
+from sklearn.preprocessing import StandardScaler
+
+# Normalize numeric features
+X = df.drop(columns=['Estimated owners'])
+
+scaler = StandardScaler()
+X[numeric_cols] = scaler.fit_transform(X[numeric_cols])
+
+print("\nNormalized numeric columns.")
