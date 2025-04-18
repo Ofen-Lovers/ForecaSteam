@@ -63,9 +63,9 @@ df['Release month'] = df['Release date'].dt.month
 df.drop(columns=['Release date'], inplace=True)
 
 # Convert platform booleans to integers
-df['Windows'] = df['Windows'].map({'TRUE': 1, 'FALSE': 0})
-df['Mac'] = df['Mac'].map({'TRUE': 1, 'FALSE': 0})
-df['Linux'] = df['Linux'].map({'TRUE': 1, 'FALSE': 0})
+df['Windows'] = df['Windows'].astype(int)
+df['Mac'] = df['Mac'].astype(int)
+df['Linux'] = df['Linux'].astype(int)
 
 # Handle missing or invalid 'Categories' data
 df['Categories'] = df['Categories'].apply(lambda x: [] if pd.isna(x) else x.split(';') if isinstance(x, str) else [])
