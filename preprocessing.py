@@ -3,16 +3,16 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.sparse import csr_matrix
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
 
-# Load data
+
 def load_data(filepath):
     return pd.read_csv(filepath)
 
-def get_target_variable(df, target_column='Estimated owners'):
-    y = df[target_column]
+def get_target_variable(target_variable):
     le = LabelEncoder()
 
-    return le.fit_transform(y) 
+    return le.fit_transform(target_variable) 
 
 def drop_unnecessary_columns(df):
     # Drop the columns we’ll no longer need
@@ -117,13 +117,25 @@ def preprocess_multilabel_columns(df):
             df = handle_multilabel_column(df, col, prefix)
     return df
 
+def normalize_data(df, target_variable, numeric_cols):
+    X = df.drop(columns=[target_variable])  # Drop target variable to separate features
+
+    scaler = StandardScaler()
+    X[numeric_cols] = scaler.fit_transform(X[numeric_cols])
+
+    print("\nNormalized numeric columns.")
+
+    return X, scaler
+
 
 def main():
     # Set the target variable
     filepath = 'steam.csv'
     df = load_data(filepath)
 
-    y = get_target_variable(df)
+    target_variable = 'Estimated owners'
+    
+    y = get_target_variable(df[target_variable])
     df = drop_unnecessary_columns(df)
     
     # Peek at the cleaned frame
@@ -140,13 +152,15 @@ def main():
     df = impute_missing_values(df, numeric_cols, categorical_cols)
     df = convert_platform_booleans(df)
     df = preprocess_multilabel_columns(df)
-
     print("\nPreprocessing complete!")
+
+    #Final Check
     print("Final shape:", df.shape)
     print("Columns now:", df.columns.tolist())
     print(df.head())
     print("\nTotal missing values remaining:", df.isnull().sum().sum())
 
-    
+    X, scaler = normalize_data(df, target_variable, numeric_cols)
+
 if __name__ == "__main__":
     main()
