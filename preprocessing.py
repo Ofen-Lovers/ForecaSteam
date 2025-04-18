@@ -4,6 +4,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.sparse import csr_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
 
 def load_data(filepath):
@@ -127,6 +128,14 @@ def normalize_data(df, target_variable, numeric_cols):
 
     return X, scaler
 
+def split_data(X, y, test_size=0.2, random_state=42):
+    # 80% training set/20% test set, random seed of 42
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
+
+    print(f"\nData split complete: {len(X_train)} train samples, {len(X_test)} test samples.")
+    return X_train, X_test, y_train, y_test
 
 def main():
     # Set the target variable
@@ -161,6 +170,8 @@ def main():
     print("\nTotal missing values remaining:", df.isnull().sum().sum())
 
     X, scaler = normalize_data(df, target_variable, numeric_cols)
+
+    split_data(X, y, test_size=0.2, random_state=42)
 
 if __name__ == "__main__":
     main()
