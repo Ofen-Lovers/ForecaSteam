@@ -4,6 +4,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import cross_val_score
 import joblib
 import numpy as np
+import pandas as pd
 
 def train_model(X_train, y_train, n_estimators=100, random_state=42, n_jobs=-1):
     model = RandomForestRegressor(n_estimators=n_estimators,random_state=random_state,n_jobs=n_jobs)

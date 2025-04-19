@@ -3,6 +3,7 @@ from sklearn.preprocessing import LabelEncoder
 import Model.preprocessing as pre
 import Model.feature_engineering as fe
 import Model.model_training as md
+import joblib
 
 def load_data(filepath):
     return pd.read_csv(filepath)
@@ -63,9 +64,12 @@ def main():
 
     # Model Training
     model = md.train_model(X_train, y_train)
+
+    # Model Evaluation
     # mse, r2 = md.evaluate_model(model, X_test, y_test)
-    mean_mse, mean_r2 = md.cross_validate_model(model, X_train, y_train, n_estimators=100, cv=5)
-    # md.save_model(model, 'ForecaSteam.pkl')
+    mean_mse, mean_r2 = md.cross_validate_model(model, X_train, y_train, cv=5)
+    md.save_model(model, 'ForecaSteam.pkl')
+
 
 if __name__ == "__main__":
     main()

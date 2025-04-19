@@ -119,6 +119,7 @@ def simplify_multihot_columns(df, numeric_cols):
     df['Num_Audio_Languages'] = df[audio_cols].sum(axis=1)
     df['Num_Supported_Languages'] = df[lang_cols].sum(axis=1)
 
+    # Drop the original detailed columns if you want
     df.drop(columns=audio_cols + lang_cols, inplace=True)
 
     new_numeric_cols = numeric_cols + ['Num_Audio_Languages', 'Num_Supported_Languages']
