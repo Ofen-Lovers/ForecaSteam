@@ -110,6 +110,24 @@ def preprocess_multilabel_columns(df):
             df = handle_multilabel_column(df, col, prefix)
     return df
 
+def simplify_multihot_columns(df, numeric_cols):
+    # Identify multi-hot encoded columns
+    audio_cols = [col for col in df.columns if col.startswith('Audio')]
+    lang_cols = [col for col in df.columns if col.startswith('Lang')]
+
+    # Create new features for counts
+    df['Num_Audio_Languages'] = df[audio_cols].sum(axis=1)
+    df['Num_Supported_Languages'] = df[lang_cols].sum(axis=1)
+
+    df.drop(columns=audio_cols + lang_cols, inplace=True)
+
+    new_numeric_cols = numeric_cols + ['Num_Audio_Languages', 'Num_Supported_Languages']
+
+    # If you want to verify:
+    print(f"Updated numeric features: {new_numeric_cols}")
+
+    return df, new_numeric_cols
+
 def seperate_dates(df):
     # Extract year, month, day from 'Release date'
     df['Release date_year'] = df['Release date'].dt.year

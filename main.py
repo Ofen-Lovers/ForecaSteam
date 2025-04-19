@@ -25,9 +25,11 @@ def EDA(df, numeric_cols):
     print("\nTotal missing values remaining:", df.isnull().sum().sum())
 
 def main():
-    # Set the target variable
-    filepath = 'Data/steam.csv'
+    #Set Filepath
+    filepath = 'Data/steam.csv'  
     df = load_data(filepath)
+
+    # Set the target variable
     target_variable = 'Estimated owners'
     
     y = get_target_variable(df[target_variable])
@@ -44,6 +46,7 @@ def main():
     df = pre.impute_missing_values(df, numeric_cols, categorical_cols)
     df = pre.convert_platform_booleans(df)
     df = pre.preprocess_multilabel_columns(df)
+    df, numeric_cols = pre.simplify_multihot_columns(df, numeric_cols)
     df = pre.seperate_dates(df)
     X, scaler = pre.normalize_data(df, target_variable, numeric_cols)
 
@@ -60,7 +63,8 @@ def main():
 
     # Model Training
     model = md.train_model(X_train, y_train)
-    mse, r2 = md.evaluate_model(model, X_test, y_test)
+    # mse, r2 = md.evaluate_model(model, X_test, y_test)
+    mean_mse, mean_r2 = md.cross_validate_model(model, X_train, y_train, n_estimators=100, cv=5)
     # md.save_model(model, 'ForecaSteam.pkl')
 
 if __name__ == "__main__":
