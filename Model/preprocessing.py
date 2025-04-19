@@ -2,18 +2,8 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.sparse import csr_matrix
-from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-
-
-def load_data(filepath):
-    return pd.read_csv(filepath)
-
-def get_target_variable(target_variable):
-    le = LabelEncoder()
-
-    return le.fit_transform(target_variable) 
 
 def drop_unnecessary_columns(df):
     # Drop the columns we’ll no longer need
@@ -54,10 +44,12 @@ def separate_column_types(df):
     numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
     categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
 
+    dense_numeric_cols = [col for col in numeric_cols if not pd.api.types.is_sparse(df[col])]
+
     print(f"\nNumeric columns: {numeric_cols}")
     print(f"Categorical columns: {categorical_cols}")
     
-    return numeric_cols, categorical_cols
+    return numeric_cols, categorical_cols, dense_numeric_cols
 
 def preprocess_dates(df):
     # Convert Release date to datetime
@@ -118,6 +110,17 @@ def preprocess_multilabel_columns(df):
             df = handle_multilabel_column(df, col, prefix)
     return df
 
+def seperate_dates(df):
+    # Extract year, month, day from 'Release date'
+    df['Release date_year'] = df['Release date'].dt.year
+    df['Release date_month'] = df['Release date'].dt.month
+    df['Release date_day'] = df['Release date'].dt.day
+
+    # Drop the original 'Release date' column
+    df.drop(columns=['Release date'], inplace=True)
+    
+    return df
+
 def normalize_data(df, target_variable, numeric_cols):
     X = df.drop(columns=[target_variable])  # Drop target variable to separate features
 
@@ -137,41 +140,3 @@ def split_data(X, y, test_size=0.2, random_state=42):
     print(f"\nData split complete: {len(X_train)} train samples, {len(X_test)} test samples.")
     return X_train, X_test, y_train, y_test
 
-def main():
-    # Set the target variable
-    filepath = 'steam.csv'
-    df = load_data(filepath)
-
-    target_variable = 'Estimated owners'
-    
-    y = get_target_variable(df[target_variable])
-    df = drop_unnecessary_columns(df)
-    
-    # Peek at the cleaned frame
-    print("Shape after dropping columns:", df.shape)
-    print(df.head())
-
-    find_null_values(df)
-
-    df = drop_high_missing_columns(df, threshold=50)
-
-    numeric_cols, categorical_cols = separate_column_types(df)
-
-    df = preprocess_dates(df)
-    df = impute_missing_values(df, numeric_cols, categorical_cols)
-    df = convert_platform_booleans(df)
-    df = preprocess_multilabel_columns(df)
-    print("\nPreprocessing complete!")
-
-    #Final Check
-    print("Final shape:", df.shape)
-    print("Columns now:", df.columns.tolist())
-    print(df.head())
-    print("\nTotal missing values remaining:", df.isnull().sum().sum())
-
-    X, scaler = normalize_data(df, target_variable, numeric_cols)
-
-    split_data(X, y, test_size=0.2, random_state=42)
-
-if __name__ == "__main__":
-    main()
