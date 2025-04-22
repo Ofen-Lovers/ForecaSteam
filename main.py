@@ -56,12 +56,16 @@ def main():
     X = fe.chi_square_test(df, target_variable, numeric_cols, X)
     print("\nShape after dropping columns:", df.shape)
 
+    joblib.dump(scaler, 'pkl/scaler.pkl') #Scaler Object: Serialized StandardScaler (or other scaler) used during training
+    joblib.dump(X.columns.tolist(), 'pkl/feature_columns.pkl') #Feature List: List of column names the model expects as input
+    joblib.dump(numeric_cols, 'pkl/numeric_columns.pkl') #Numeric Features List: List of which features were treated as numeric during preprocessing
+
     # Save the processed features (X) and target (y) as CSV
-    # processed_data = X.copy()
-    #processed_data['Estimated_owners'] = y  # Add target column if needed
-    # Save to CSV
-    # processed_data.to_csv('Processed_Data/processed_steam_data.csv', index=False)
-    # print("Processed data saved to 'Processed_Data/processed_steam_data.csv'")
+    processed_data = X.copy()
+    processed_data['Estimated_owners'] = y  # Add target column if needed
+    #Save to CSV
+    processed_data.to_csv('Processed_Data/processed_steam.csv', index=False)
+    print("Processed data saved to 'Processed_Data/processed_steam.csv'")
     
     X_train, X_test, y_train, y_test = pre.split_data(X, y, test_size=0.2, random_state=42)
     print("\nPreprocessing complete!")
@@ -73,12 +77,9 @@ def main():
     model = md.train_model(X_train, y_train)
 
     # Model Evaluation
-    # mse, r2 = md.evaluate_model(model, X_test, y_test)
+    mse, r2 = md.evaluate_model(model, X_test, y_test)
     mean_mse, mean_r2 = md.cross_validate_model(model, X_train, y_train, cv=5)
     md.save_model(model, 'pkl/ForecaSteam.pkl') # Trained Model: A serialized (pickled) version of your trained Random Forest model
-    #joblib.dump(scaler, 'pkl/scaler.pkl') #Scaler Object: Serialized StandardScaler (or other scaler) used during training
-    #joblib.dump(X.columns.tolist(), 'pkl/feature_columns.pkl') #Feature List: List of column names the model expects as input
-    #joblib.dump(numeric_cols, 'pkl/numeric_columns.pkl') #Numeric Features List: List of which features were treated as numeric during preprocessing
 
 if __name__ == "__main__":
     main()
