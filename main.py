@@ -5,6 +5,9 @@ import Model.feature_engineering as fe
 import Model.model_training as md
 import joblib
 import os
+import kagglehub
+import shutil
+
 def load_data(filepath):
     return pd.read_csv(filepath)
 
@@ -25,10 +28,26 @@ def EDA(df, numeric_cols):
 
     print("\nTotal missing values remaining:", df.isnull().sum().sum())
 
+def fetch_dataset(filepath):
+    if os.path.exists(filepath):
+        data = load_data(filepath)
+    else:
+        print(f"File not found, downloading from Kaggle...")
+        path = kagglehub.dataset_download('mexwell/steamgames')
+        
+        for file in os.listdir(path):
+            if file.endswith('.csv'):
+                source_file = os.path.join(path, file)
+                shutil.copyfile(source_file, filepath)
+                break
+        data = load_data(filepath)
+    return data
+
 def main():
     #Set Filepath
-    filepath = 'Data/steam.csv'  
-    df = load_data(filepath)
+    filepath = 'Data/steam.csv'
+    os.makedirs('Data', exist_ok=True) # Create directory if it doesn't exist
+    df = fetch_dataset(filepath)    
 
     # Set the target variable
     target_variable = 'Estimated owners'

@@ -1,2 +1,4 @@
 Data/steam.csv
 Model/__pycache__
+pkl/ForecaSteam.pkl
+pkl/scaler.pkl
