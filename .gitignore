@@ -1,3 +1,4 @@
 Data/steam.csv
-final_feature_columns.pkl
-ForecaSteam.pkl
+Model/__pycache__
+pkl/ForecaSteam.pkl
+pkl/scaler.pkl

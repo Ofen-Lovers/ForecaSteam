@@ -7,8 +7,8 @@ import joblib
 def load():
     # Load trained model and the final feature list used for training
     try:
-        rf_model = joblib.load('ForecaSteam.pkl')
-        final_feature_columns = joblib.load('final_feature_columns.pkl')
+        rf_model = joblib.load('pkl/ForecaSteam.pkl')
+        final_feature_columns = joblib.load('pkl/feature_columns.pkl')
         # Ensure you load the model trained WITH post-launch features if that's the one you want to interpret
     except FileNotFoundError as e:
         print(f"Error loading files: {e}. Make sure model and feature list are saved.")
@@ -46,3 +46,5 @@ def main():
     rf_model, final_feature_columns = load()
 
     feature_importance(rf_model, final_feature_columns)
+    
+main()

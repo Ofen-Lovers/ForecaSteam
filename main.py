@@ -4,6 +4,9 @@ import Model.preprocessing as pre
 import Model.feature_engineering as fe
 import Model.model_training as md
 import joblib
+import os
+import kagglehub
+import shutil
 
 def load_data(filepath):
     return pd.read_csv(filepath)
@@ -25,10 +28,26 @@ def EDA(df, numeric_cols):
 
     print("\nTotal missing values remaining:", df.isnull().sum().sum())
 
+def fetch_dataset(filepath):
+    if os.path.exists(filepath):
+        data = load_data(filepath)
+    else:
+        print(f"File not found, downloading from Kaggle...")
+        path = kagglehub.dataset_download('mexwell/steamgames')
+        
+        for file in os.listdir(path):
+            if file.endswith('.csv'):
+                source_file = os.path.join(path, file)
+                shutil.copyfile(source_file, filepath)
+                break
+        data = load_data(filepath)
+    return data
+
 def main():
     #Set Filepath
-    filepath = 'Data/steam.csv'  
-    df = load_data(filepath)
+    filepath = 'Data/steam.csv'
+    os.makedirs('Data', exist_ok=True) # Create directory if it doesn't exist
+    df = fetch_dataset(filepath)    
 
     # Set the target variable
     target_variable = 'Estimated owners'
@@ -52,22 +71,32 @@ def main():
     #Feature Engineering
     X = fe.anova_test_numeric(numeric_cols, X, y)
     X = fe.chi_square_test(df, target_variable, numeric_cols, X)
-    print("\nShape after dropping columns:", df.shape)  
+    print("\nShape after dropping columns:", df.shape)
 
+    joblib.dump(scaler, 'pkl/scaler.pkl') #Scaler Object: Serialized StandardScaler (or other scaler) used during training
+    joblib.dump(X.columns.tolist(), 'pkl/feature_columns.pkl') #Feature List: List of column names the model expects as input
+    joblib.dump(numeric_cols, 'pkl/numeric_columns.pkl') #Numeric Features List: List of which features were treated as numeric during preprocessing
+
+    # Save the processed features (X) and target (y) as CSV
+    processed_data = X.copy()
+    processed_data['Estimated_owners'] = y  # Add target column if needed
+    #Save to CSV
+    processed_data.to_csv('Processed_Data/processed_steam.csv', index=False)
+    print("Processed data saved to 'Processed_Data/processed_steam.csv'")
+    
     X_train, X_test, y_train, y_test = pre.split_data(X, y, test_size=0.2, random_state=42)
     print("\nPreprocessing complete!")
 
     #Final Check
     EDA(X, numeric_cols)
-
+    
     # Model Training
     model = md.train_model(X_train, y_train)
 
     # Model Evaluation
-    # mse, r2 = md.evaluate_model(model, X_test, y_test)
+    mse, r2 = md.evaluate_model(model, X_test, y_test)
     mean_mse, mean_r2 = md.cross_validate_model(model, X_train, y_train, cv=5)
-    md.save_model(model, 'ForecaSteam.pkl')
-
+    md.save_model(model, 'pkl/ForecaSteam.pkl') # Trained Model: A serialized (pickled) version of your trained Random Forest model
 
 if __name__ == "__main__":
     main()
