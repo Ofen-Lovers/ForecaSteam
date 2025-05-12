@@ -44,12 +44,10 @@ def separate_column_types(df):
     numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
     categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
 
-    dense_numeric_cols = [col for col in numeric_cols if not pd.api.types.is_sparse(df[col])]
-
     print(f"\nNumeric columns: {numeric_cols}")
     print(f"Categorical columns: {categorical_cols}")
     
-    return numeric_cols, categorical_cols, dense_numeric_cols
+    return numeric_cols, categorical_cols
 
 def preprocess_dates(df):
     # Convert Release date to datetime

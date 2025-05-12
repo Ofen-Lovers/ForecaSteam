@@ -32,17 +32,15 @@ def main():
 
     # Set the target variable
     target_variable = 'Estimated owners'
-    
     y = get_target_variable(df[target_variable])
+    
     df = pre.drop_unnecessary_columns(df)
     print("Shape after dropping columns:", df.shape)    #Peak at columns after dropping
     print(df.head())
 
     pre.find_null_values(df)
     df = pre.drop_high_missing_columns(df, threshold=50)
-
-    numeric_cols, categorical_cols, dense_numeric_cols = pre.separate_column_types(df)
-
+    numeric_cols, categorical_cols = pre.separate_column_types(df)
     df = pre.preprocess_dates(df)
     df = pre.impute_missing_values(df, numeric_cols, categorical_cols)
     df = pre.convert_platform_booleans(df)
