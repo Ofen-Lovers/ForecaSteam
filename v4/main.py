@@ -25,7 +25,7 @@ def get_target_variable(df: pd.DataFrame, target_column_name: str) -> Tuple[pd.S
     print(f"Classes: {le.classes_}")
     # Ensure pkl directory exists
     os.makedirs('pkl', exist_ok=True)
-    joblib.dump(le, 'v4/pkl/label_encoder.pkl')
+    joblib.dump(le, os.path.join('pkl', 'label_encoder.pkl'))
     return y, le
 
 def EDA(df: pd.DataFrame, numeric_cols_for_eda: List[str]):
@@ -109,12 +109,14 @@ def main():
     tuning_iterations = 10 # Keep low for speed, increase for better tuning
     tuning_cv_folds = 2    # Keep low for speed
 
-    os.makedirs(os.path.join(project_dir, data_dir), exist_ok=True)
-    os.makedirs(os.path.join(project_dir, processed_data_dir), exist_ok=True)
-    os.makedirs(os.path.join(project_dir, model_artefacts_dir), exist_ok=True)
+    # Create necessary directories
+    os.makedirs(data_dir, exist_ok=True)
+    os.makedirs(processed_data_dir, exist_ok=True)
+    os.makedirs(model_artefacts_dir, exist_ok=True)
+    os.makedirs(os.path.join(project_dir, 'images'), exist_ok=True)
 
     raw_data_path = os.path.join(data_dir, 'steam.csv')
-    df_original = fetch_dataset(project_dir, data_dir, 'steam.csv')
+    df_original = fetch_dataset(os.path.dirname(project_dir), 'Data', 'steam.csv')
     if df_original is None:
         print("Exiting due to data loading failure.")
         return
