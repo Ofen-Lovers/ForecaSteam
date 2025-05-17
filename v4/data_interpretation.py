@@ -43,7 +43,14 @@ def feature_importance(rf_model, final_feature_columns):
     plt.title("Top 20 Feature Importances from Random Forest")
     plt.gca().invert_yaxis() # Display most important at the top
     plt.tight_layout()
-    plt.show()
+    
+    # Save the plot
+    images_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'images')
+    os.makedirs(images_dir, exist_ok=True)
+    plot_path = os.path.join(images_dir, 'feature_importances.png')
+    plt.savefig(plot_path, bbox_inches='tight', dpi=300)
+    print(f"Plot saved to {plot_path}")
+    plt.close()
 
 def main():
     rf_model, final_feature_columns = load()

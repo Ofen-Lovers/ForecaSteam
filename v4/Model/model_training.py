@@ -138,50 +138,54 @@ def cross_validate_model(model, X_train: pd.DataFrame, y_train: pd.Series,
         print(f"Mean CV R²: {mean_r2:.4f}")
         return mean_mse, mean_r2
 
+def save_plot(plt, filename: str, version: str):
+    """Saves a plot to the version-specific images directory."""
+    # Create version-specific images directory
+    images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'images')
+    os.makedirs(images_dir, exist_ok=True)
+    
+    # Save the plot
+    plot_path = os.path.join(images_dir, filename)
+    try:
+        plt.savefig(plot_path, bbox_inches='tight', dpi=300)
+        print(f"Plot saved to {plot_path}")
+    except Exception as e:
+        print(f"Could not save plot: {e}")
+    finally:
+        plt.close()
 
 def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series,
                    is_classifier: bool = True, 
                    label_encoder: Optional[LabelEncoder] = None):
     """
-    Evaluates the model on the test set.
+    Evaluates the model on test data and returns performance metrics.
+    For classification: returns accuracy and F1 score
+    For regression: returns MSE and R² score
     """
     y_pred = model.predict(X_test)
     
     if is_classifier:
         accuracy = accuracy_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred, average='weighted') 
-
+        f1 = f1_score(y_test, y_pred, average='weighted')
+        
         print(f"\nModel Evaluation on Test Set (Classification):")
         print(f"Accuracy: {accuracy:.4f}")
         print(f"F1 Score (Weighted): {f1:.4f}")
         
-        class_names = None
-        if label_encoder and hasattr(label_encoder, 'classes_'):
-            class_names = label_encoder.classes_
-        else:
-            unique_labels = np.unique(np.concatenate((y_test, y_pred)))
-            class_names = [str(i) for i in unique_labels]
-
-        print("\nClassification Report:")
-        report_labels = np.unique(np.concatenate((y_test, y_pred)))
-        
-        # Create target names for the report based on the actual labels present
-        # and the original class names if available
+        # Get class names for reporting
+        report_labels = sorted(list(set(y_test)))
         report_target_names = None
-        if class_names is not None:
-            # Map original class names to the report_labels indices
+        if label_encoder is not None:
             try:
-                # This assumes class_names from LabelEncoder are sorted like np.unique results
-                # or that report_labels are a subset of indices into class_names
-                report_target_names = [class_names[i] for i in report_labels]
-            except IndexError: # Fallback if mapping is tricky
-                 report_target_names = [str(l) for l in report_labels]
-        else:
-            report_target_names = [str(l) for l in report_labels]
+                report_target_names = label_encoder.inverse_transform(report_labels)
+                # Convert to list if it's a numpy array
+                if isinstance(report_target_names, np.ndarray):
+                    report_target_names = report_target_names.tolist()
+            except:
+                pass
 
-
-        if report_target_names and len(report_target_names) == len(report_labels):
-             print(classification_report(y_test, y_pred, labels=report_labels, target_names=report_target_names, zero_division=0))
+        if report_target_names is not None and len(report_target_names) == len(report_labels):
+            print(classification_report(y_test, y_pred, labels=report_labels, target_names=report_target_names, zero_division=0))
         else: # Fallback if target_names creation failed
             print(classification_report(y_test, y_pred, labels=report_labels, zero_division=0))
         
@@ -203,23 +207,38 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series,
         plt.xticks(rotation=45, ha="right")
         plt.yticks(rotation=0)
         plt.tight_layout()
-        os.makedirs('pkl', exist_ok=True) 
-        plot_path = os.path.join('pkl', 'confusion_matrix.png')
-        try:
-            plt.savefig(plot_path)
-            print(f"Confusion matrix plot saved to {plot_path}")
-        except Exception as e:
-            print(f"Could not save confusion matrix plot: {e}")
-        # plt.show() 
+        
+        # Save confusion matrix plot
+        save_plot(plt, 'confusion_matrix.png', '4')
 
         return accuracy, f1
     else: # Regression
-        mse = mean_squared_error(y_test, y_pred) # Now defined
-        r2 = r2_score(y_test, y_pred) # Now defined
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
         
         print(f"\nModel Evaluation on Test Set (Regression):")
         print(f"Mean Squared Error (MSE): {mse:.4f}")
-        print(f"R² Score: {r2:.4f}") 
+        print(f"R² Score: {r2:.4f}")
+
+        # Create and save regression plots
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y_test, y_pred, alpha=0.5)
+        plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
+        plt.xlabel('True Values')
+        plt.ylabel('Predictions')
+        plt.title('Regression: True vs Predicted Values')
+        save_plot(plt, 'regression_scatter.png', '4')
+
+        # Residuals plot
+        residuals = y_test - y_pred
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y_pred, residuals, alpha=0.5)
+        plt.axhline(y=0, color='r', linestyle='--')
+        plt.xlabel('Predicted Values')
+        plt.ylabel('Residuals')
+        plt.title('Residuals Plot')
+        save_plot(plt, 'residuals_plot.png', '4')
+
         return mse, r2
 
 def save_model(model, filename: str):
@@ -227,14 +246,24 @@ def save_model(model, filename: str):
     joblib.dump(model, filename)
     print(f"Model saved to {filename} successfully!")
 
-def print_feature_importances(model, feature_names: list, top_n: int = 20):
-    """Prints the top N feature importances from a tree-based model."""
-    if hasattr(model, 'feature_importances_'):
-        importances = model.feature_importances_
-        feature_importance_df = pd.DataFrame({'feature': feature_names, 'importance': importances})
-        feature_importance_df = feature_importance_df.sort_values(by='importance', ascending=False)
-        
-        print(f"\nTop {top_n} Feature Importances:")
-        print(feature_importance_df.head(top_n))
-    else:
-        print("\nModel does not have feature_importances_ attribute.")
+def print_feature_importances(model, feature_names: List[str], top_n: int = 20):
+    """Prints and plots the top N feature importances."""
+    importances = model.feature_importances_
+    indices = np.argsort(importances)[::-1]
+    
+    # Print feature importances
+    print("\nTop {} Feature Importances:".format(top_n))
+    importance_df = pd.DataFrame({
+        'feature': feature_names,
+        'importance': importances
+    })
+    importance_df = importance_df.sort_values('importance', ascending=False).head(top_n)
+    print(importance_df)
+    
+    # Plot feature importances
+    plt.figure(figsize=(12, 6))
+    plt.bar(range(top_n), importances[indices[:top_n]])
+    plt.xticks(range(top_n), [feature_names[i] for i in indices[:top_n]], rotation=45, ha='right')
+    plt.title('Top {} Feature Importances'.format(top_n))
+    plt.tight_layout()
+    save_plot(plt, 'feature_importances.png', '4')

@@ -25,7 +25,7 @@ def get_target_variable(df: pd.DataFrame, target_column_name: str) -> Tuple[pd.S
     print(f"Classes: {le.classes_}")
     # Ensure pkl directory exists
     os.makedirs('pkl', exist_ok=True)
-    joblib.dump(le, 'pkl/label_encoder.pkl')
+    joblib.dump(le, 'v4/pkl/label_encoder.pkl')
     return y, le
 
 def EDA(df: pd.DataFrame, numeric_cols_for_eda: List[str]):
