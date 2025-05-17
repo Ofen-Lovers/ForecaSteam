@@ -17,15 +17,16 @@ def load_data(filepath: str) -> pd.DataFrame:
     """Loads a CSV file into a pandas DataFrame."""
     return pd.read_csv(filepath)
 
-def get_target_variable(df: pd.DataFrame, target_column_name: str) -> Tuple[pd.Series, LabelEncoder]:
-    """Encodes the target variable using LabelEncoder and saves the encoder."""
+def get_target_variable(df: pd.DataFrame, target_column_name: str, pkl_save_path: str) -> Tuple[pd.Series, LabelEncoder]:
+    """Encodes the target variable using LabelEncoder and saves the encoder to the specified path."""
     le = LabelEncoder()
     y = le.fit_transform(df[target_column_name])
     print(f"\nTarget variable '{target_column_name}' label encoded.")
     print(f"Classes: {le.classes_}")
-    # Ensure pkl directory exists
-    os.makedirs('pkl', exist_ok=True)
-    joblib.dump(le, os.path.join('pkl', 'label_encoder.pkl'))
+    # Ensure the full directory path for the pkl file exists
+    os.makedirs(os.path.dirname(pkl_save_path), exist_ok=True)
+    joblib.dump(le, pkl_save_path)
+    print(f"Label encoder saved to '{pkl_save_path}'")
     return y, le
 
 def EDA(df: pd.DataFrame, numeric_cols_for_eda: List[str]):
@@ -44,7 +45,12 @@ def EDA(df: pd.DataFrame, numeric_cols_for_eda: List[str]):
     else:
         print("\nNo numeric columns to describe in final features (X).")
 
-    print("\nTotal missing values remaining in final features (X):", df.isnull().sum().sum())
+    # Addressing the FutureWarning for isnull().sum().sum() on sparse data
+    if hasattr(df, 'sparse'): # Check if it's a sparse dataframe or has sparse columns
+        total_missing = df.isnull().values.sum()
+    else:
+        total_missing = df.isnull().sum().sum()
+    print("\nTotal missing values remaining in final features (X):", total_missing)
     print("--- End of EDA ---")
 
 def fetch_dataset(main_dir: str, data_subdir: str, filename: str) -> Optional[pd.DataFrame]:
@@ -91,31 +97,33 @@ def fetch_dataset(main_dir: str, data_subdir: str, filename: str) -> Optional[pd
     return data
 
 def main():
+    # project_dir will be .../ForecaSteam/v4/ if this main.py is in v4/
     project_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(os.path.dirname(project_dir), 'Data')
-    processed_data_dir = os.path.join(project_dir, 'Processed_Data')
-    model_artefacts_dir = os.path.join(project_dir, 'pkl')
+    
+    # data_dir will be .../ForecaSteam/Data/
+    # This assumes 'Data' folder is one level above the 'v4' folder
+    data_dir = os.path.join(os.path.dirname(project_dir), 'Data') 
+    
+    processed_data_dir = os.path.join(project_dir, 'Processed_Data') # .../ForecaSteam/v4/Processed_Data/
+    model_artefacts_dir = os.path.join(project_dir, 'pkl') # .../ForecaSteam/v4/pkl/
+    images_output_dir = os.path.join(project_dir, 'images') # .../ForecaSteam/v4/images/
     
     target_variable_name = 'Estimated owners'
     
-    # Feature selection (ANOVA and Chi-Square) is generally for relevance to the target.
-    # While ANOVA's f_classif is for classification/regression and Chi-Square for categorical features,
-    # their use here for feature *reduction* prior to modeling is usually fine for both tasks.
-    # The primary impact will be on the model's interpretation of the target.
     anova_pval_threshold = 0.05
     chi_square_pval_threshold = 0.05
 
     run_hyperparameter_tuning = True 
-    tuning_iterations = 10 # Keep low for speed, increase for better tuning
-    tuning_cv_folds = 2    # Keep low for speed
+    tuning_iterations = 10 
+    tuning_cv_folds = 2    
 
     # Create necessary directories
-    os.makedirs(data_dir, exist_ok=True)
-    os.makedirs(processed_data_dir, exist_ok=True)
-    os.makedirs(model_artefacts_dir, exist_ok=True)
-    os.makedirs(os.path.join(project_dir, 'images'), exist_ok=True)
+    os.makedirs(data_dir, exist_ok=True) # For raw data
+    os.makedirs(processed_data_dir, exist_ok=True) # For v4/Processed_Data
+    os.makedirs(model_artefacts_dir, exist_ok=True) # For v4/pkl
+    os.makedirs(images_output_dir, exist_ok=True) # For v4/images
 
-    raw_data_path = os.path.join(data_dir, 'steam.csv')
+    # Fetch raw data from ../Data/steam.csv relative to v4/
     df_original = fetch_dataset(os.path.dirname(project_dir), 'Data', 'steam.csv')
     if df_original is None:
         print("Exiting due to data loading failure.")
@@ -126,11 +134,14 @@ def main():
     if target_variable_name not in df_original.columns:
         print(f"Target variable '{target_variable_name}' not found in the dataset.")
         return
-    y, label_encoder_for_target = get_target_variable(df_original, target_variable_name) # Save LE
+    
+    # Define the full path for saving label_encoder.pkl inside v4/pkl/
+    label_encoder_save_path = os.path.join(model_artefacts_dir, 'label_encoder.pkl')
+    y, label_encoder_for_target = get_target_variable(df_original, target_variable_name, label_encoder_save_path)
     
     df_features = df_original.drop(columns=[target_variable_name])
 
-    # --- Preprocessing (largely same for classification vs regression features) ---
+    # --- Preprocessing ---
     df_features = pre.drop_unnecessary_columns(df_features)
     print("Shape after dropping unnecessary columns:", df_features.shape)
     pre.find_null_values(df_features)
@@ -145,11 +156,10 @@ def main():
     df_features, numeric_cols = pre.create_game_age_feature(df_features, numeric_cols)
     print("Shape before normalization:", df_features.shape)
     print(f"Numeric columns before normalization: {numeric_cols}")
-    X, scaler = pre.normalize_data(df_features, None, numeric_cols)
+    X, scaler = pre.normalize_data(df_features, None, numeric_cols) # Target already dropped
     print("Shape after normalization (X):", X.shape)
 
-    # --- Feature Engineering (ANOVA and Chi-Square can still be used) ---
-    # ANOVA's f_classif (used by SelectKBest, default for f_classif) works for classification targets.
+    # --- Feature Engineering ---
     current_numeric_in_X = [col for col in numeric_cols if col in X.columns]
     X, final_numeric_cols = fe.anova_test_numeric(X, y, current_numeric_in_X, p_value_threshold=anova_pval_threshold)
     print("Shape after ANOVA:", X.shape)
@@ -158,12 +168,13 @@ def main():
     X = fe.chi_square_test(X, y, final_numeric_cols, p_value_threshold=chi_square_pval_threshold)
     print("Shape after Chi-Square:", X.shape)
 
-    # --- Save Preprocessing Artifacts ---
+    # --- Save Preprocessing Artifacts to v4/pkl/ ---
     if scaler is not None:
         joblib.dump(scaler, os.path.join(model_artefacts_dir, 'scaler.pkl'))
     joblib.dump(X.columns.tolist(), os.path.join(model_artefacts_dir, 'feature_columns.pkl'))
     joblib.dump(final_numeric_cols, os.path.join(model_artefacts_dir, 'numeric_columns_final.pkl'))
 
+    # Save processed data to v4/Processed_Data/
     processed_data_for_csv = X.copy()
     processed_data_for_csv[target_variable_name] = y 
     processed_csv_path = os.path.join(processed_data_dir, 'processed_steam.csv')
@@ -181,12 +192,12 @@ def main():
     model_name_suffix = "Classifier" if IS_CLASSIFICATION_TASK else "Regressor"
     model_type_name = f"random_forest_{model_name_suffix.lower()}"
 
-    default_params = { # General defaults, tuning will override
+    default_params = { 
         'n_estimators': 200, 'max_depth': 30,
         'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'
     }
     if IS_CLASSIFICATION_TASK:
-        default_params['class_weight'] = 'balanced' # Good starting point for imbalance
+        default_params['class_weight'] = 'balanced' 
 
     best_model_params = default_params.copy()
 
@@ -194,7 +205,7 @@ def main():
         print("\n--- Hyperparameter Tuning ---")
         tuned_params = md.tune_random_forest_hyperparameters(
             X_train, y_train,
-            is_classifier=IS_CLASSIFICATION_TASK, # Pass flag
+            is_classifier=IS_CLASSIFICATION_TASK,
             n_iter=tuning_iterations, 
             cv=tuning_cv_folds, 
             random_state=42
@@ -207,11 +218,12 @@ def main():
                            params=best_model_params, 
                            random_state=42)
 
+    # This will now only print text feature importances, not save a plot
     md.print_feature_importances(model, X_train.columns.tolist(), top_n=20)
 
     # --- Model Evaluation ---
     print(f"\n--- Model Evaluation on Test Set ({model_name_suffix}) ---")
-    # Pass label_encoder for class names in reports
+    # This will now only print text report/CM, not save CM plot
     metrics1, metrics2 = md.evaluate_model(model, X_test, y_test, 
                                            is_classifier=IS_CLASSIFICATION_TASK,
                                            label_encoder=label_encoder_for_target) 
@@ -220,6 +232,7 @@ def main():
     cv_metric1, cv_metric2 = md.cross_validate_model(model, X_train, y_train, 
                                                      is_classifier=IS_CLASSIFICATION_TASK, cv=3)
     
+    # Save model to v4/pkl/
     model_save_path = os.path.join(model_artefacts_dir, f'ForecaSteam_{model_name_suffix}.pkl')
     md.save_model(model, model_save_path)
 

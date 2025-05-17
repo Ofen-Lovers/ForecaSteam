@@ -138,29 +138,31 @@ def cross_validate_model(model, X_train: pd.DataFrame, y_train: pd.Series,
         print(f"Mean CV R²: {mean_r2:.4f}")
         return mean_mse, mean_r2
 
-def save_plot(plt, filename: str, version: str):
+def save_plot(plt_obj, filename: str, version: str): # Renamed plt to plt_obj to avoid conflict with import
     """Saves a plot to the version-specific images directory."""
     # Create version-specific images directory
-    images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'images')
+    # Path assumes model_training.py is in a 'Model' subdirectory relative to project root
+    project_root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    images_dir = os.path.join(project_root_dir, 'images') # Corrected path
     os.makedirs(images_dir, exist_ok=True)
     
     # Save the plot
     plot_path = os.path.join(images_dir, filename)
     try:
-        plt.savefig(plot_path, bbox_inches='tight', dpi=300)
+        plt_obj.savefig(plot_path, bbox_inches='tight', dpi=300) # Use plt_obj
         print(f"Plot saved to {plot_path}")
     except Exception as e:
         print(f"Could not save plot: {e}")
     finally:
-        plt.close()
+        plt_obj.close() # Use plt_obj
 
 def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series,
                    is_classifier: bool = True, 
                    label_encoder: Optional[LabelEncoder] = None):
     """
     Evaluates the model on test data and returns performance metrics.
-    For classification: returns accuracy and F1 score
-    For regression: returns MSE and R² score
+    For classification: returns accuracy and F1 score. Confusion matrix plot is NOT saved here.
+    For regression: returns MSE and R² score, and saves regression plots.
     """
     y_pred = model.predict(X_test)
     
@@ -173,43 +175,38 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series,
         print(f"F1 Score (Weighted): {f1:.4f}")
         
         # Get class names for reporting
-        report_labels = sorted(list(set(y_test)))
+        report_labels = sorted(list(set(y_test))) # Use actual labels present in y_test
+        # Ensure report_labels are integers if y_test contains integers
+        if y_test.dtype == 'int':
+            report_labels = sorted([int(l) for l in report_labels])
+
         report_target_names = None
         if label_encoder is not None:
             try:
-                report_target_names = label_encoder.inverse_transform(report_labels)
-                # Convert to list if it's a numpy array
-                if isinstance(report_target_names, np.ndarray):
-                    report_target_names = report_target_names.tolist()
-            except:
+                # Ensure labels passed to inverse_transform are valid for the encoder
+                valid_labels_for_encoder = [l for l in report_labels if l < len(label_encoder.classes_)]
+                if len(valid_labels_for_encoder) == len(report_labels):
+                     report_target_names = label_encoder.inverse_transform(report_labels)
+                     if isinstance(report_target_names, np.ndarray):
+                        report_target_names = report_target_names.tolist()
+                else:
+                    print("Warning: Some labels in y_test are outside the range of the label encoder. Using numeric labels for classification report.")
+            except Exception as e:
+                print(f"Warning: Error transforming labels for classification report: {e}. Using numeric labels.")
                 pass
 
+        print("\nClassification Report (Text):")
         if report_target_names is not None and len(report_target_names) == len(report_labels):
             print(classification_report(y_test, y_pred, labels=report_labels, target_names=report_target_names, zero_division=0))
-        else: # Fallback if target_names creation failed
+        else: 
             print(classification_report(y_test, y_pred, labels=report_labels, zero_division=0))
         
-        print("\nConfusion Matrix:")
+        print("\nConfusion Matrix (Text):")
         cm = confusion_matrix(y_test, y_pred, labels=report_labels)
         print(cm)
         
-        # Adjust figure size dynamically based on number of classes
-        fig_width = max(10, len(report_target_names or []) * 0.8)
-        fig_height = max(8, len(report_target_names or []) * 0.6)
-        plt.figure(figsize=(fig_width, fig_height))
-
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", 
-                    xticklabels=report_target_names or report_labels, 
-                    yticklabels=report_target_names or report_labels)
-        plt.title("Confusion Matrix")
-        plt.xlabel("Predicted Label")
-        plt.ylabel("True Label")
-        plt.xticks(rotation=45, ha="right")
-        plt.yticks(rotation=0)
-        plt.tight_layout()
-        
-        # Save confusion matrix plot
-        save_plot(plt, 'confusion_matrix.png', '4')
+        # --- Plotting and saving of Confusion Matrix PNG is REMOVED from here ---
+        # It will be handled by data_interpretation.py
 
         return accuracy, f1
     else: # Regression
@@ -227,17 +224,18 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series,
         plt.xlabel('True Values')
         plt.ylabel('Predictions')
         plt.title('Regression: True vs Predicted Values')
-        save_plot(plt, 'regression_scatter.png', '4')
+        save_plot(plt, 'regression_scatter.png', '4') # Uses the global plt
 
         # Residuals plot
-        residuals = y_test - y_pred
         plt.figure(figsize=(10, 6))
+        plt.scatter(y_pred, residuals, alpha=0.5) # 'residuals' was not defined here
+        residuals = y_test - y_pred # Define residuals
         plt.scatter(y_pred, residuals, alpha=0.5)
         plt.axhline(y=0, color='r', linestyle='--')
         plt.xlabel('Predicted Values')
         plt.ylabel('Residuals')
         plt.title('Residuals Plot')
-        save_plot(plt, 'residuals_plot.png', '4')
+        save_plot(plt, 'residuals_plot.png', '4') # Uses the global plt
 
         return mse, r2
 
@@ -247,23 +245,15 @@ def save_model(model, filename: str):
     print(f"Model saved to {filename} successfully!")
 
 def print_feature_importances(model, feature_names: List[str], top_n: int = 20):
-    """Prints and plots the top N feature importances."""
+    """Prints the top N feature importances. Plotting/saving PNG is REMOVED from here."""
     importances = model.feature_importances_
-    indices = np.argsort(importances)[::-1]
+    # indices = np.argsort(importances)[::-1] # Not needed if not plotting here
     
     # Print feature importances
-    print("\nTop {} Feature Importances:".format(top_n))
+    print("\nTop {} Feature Importances (Text):".format(top_n))
     importance_df = pd.DataFrame({
         'feature': feature_names,
         'importance': importances
     })
     importance_df = importance_df.sort_values('importance', ascending=False).head(top_n)
     print(importance_df)
-    
-    # Plot feature importances
-    plt.figure(figsize=(12, 6))
-    plt.bar(range(top_n), importances[indices[:top_n]])
-    plt.xticks(range(top_n), [feature_names[i] for i in indices[:top_n]], rotation=45, ha='right')
-    plt.title('Top {} Feature Importances'.format(top_n))
-    plt.tight_layout()
-    save_plot(plt, 'feature_importances.png', '4')
