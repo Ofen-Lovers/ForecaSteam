@@ -3,16 +3,19 @@ import numpy as np
 import joblib
 from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.sparse import csr_matrix
+import os
 
 class SteamOwnershipPredictor:
     def __init__(self):
         """Initialize by loading all required artifacts"""
         try:
-            # Load all artifacts
-            self.model = joblib.load('pkl/ForecaSteam.pkl')
-            self.scaler = joblib.load('pkl/scaler.pkl')
-            self.feature_columns = joblib.load('pkl/feature_columns.pkl')
-            self.numeric_columns = joblib.load('pkl/numeric_columns.pkl')
+            # Update paths to use the new directory structure
+            project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            pkl_dir = os.path.join(project_dir, 'pkl')
+            self.model = joblib.load(os.path.join(pkl_dir, 'ForecaSteam.pkl'))
+            self.scaler = joblib.load(os.path.join(pkl_dir, 'scaler.pkl'))
+            self.feature_columns = joblib.load(os.path.join(pkl_dir, 'feature_columns.pkl'))
+            self.numeric_columns = joblib.load(os.path.join(pkl_dir, 'numeric_columns.pkl'))
             
             # Get the actual features used by the model
             self.model_features = (self.model.feature_names_in_ 
@@ -140,7 +143,7 @@ def predict_from_csv(csv_path):
 
 if __name__ == "__main__":
     # Example usage with the test.csv file
-    csv_path = "Processed_Data/test.csv"  # Update with your actual path
+    csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Processed_Data', 'test.csv')
     predictions = predict_from_csv(csv_path)
     
     print("\nSteam Game Ownership Predictions:")

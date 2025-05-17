@@ -44,9 +44,15 @@ def fetch_dataset(filepath):
     return data
 
 def main():
+    # Update paths to use the new directory structure
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(os.path.dirname(project_dir), 'Data')
+    processed_data_dir = os.path.join(project_dir, 'Processed_Data')
+    model_artefacts_dir = os.path.join(project_dir, 'pkl')
+
     #Set Filepath
-    filepath = 'Data/steam.csv'
-    os.makedirs('Data', exist_ok=True) # Create directory if it doesn't exist
+    filepath = os.path.join(data_dir, 'steam.csv')
+    os.makedirs(data_dir, exist_ok=True) # Create directory if it doesn't exist
     df = fetch_dataset(filepath)    
 
     # Set the target variable
@@ -75,16 +81,16 @@ def main():
     X = fe.chi_square_test(df, target_variable, numeric_cols, X)
     print("\nShape after dropping columns:", df.shape)
 
-    joblib.dump(scaler, 'pkl/scaler.pkl') #Scaler Object: Serialized StandardScaler (or other scaler) used during training
-    joblib.dump(X.columns.tolist(), 'pkl/feature_columns.pkl') #Feature List: List of column names the model expects as input
-    joblib.dump(numeric_cols, 'pkl/numeric_columns.pkl') #Numeric Features List: List of which features were treated as numeric during preprocessing
+    joblib.dump(scaler, os.path.join(model_artefacts_dir, 'scaler.pkl')) #Scaler Object: Serialized StandardScaler (or other scaler) used during training
+    joblib.dump(X.columns.tolist(), os.path.join(model_artefacts_dir, 'feature_columns.pkl')) #Feature List: List of column names the model expects as input
+    joblib.dump(numeric_cols, os.path.join(model_artefacts_dir, 'numeric_columns.pkl')) #Numeric Features List: List of which features were treated as numeric during preprocessing
 
     # Save the processed features (X) and target (y) as CSV
     processed_data = X.copy()
     processed_data['Estimated_owners'] = y  # Add target column if needed
     #Save to CSV
-    processed_data.to_csv('Processed_Data/processed_steam.csv', index=False)
-    print("Processed data saved to 'Processed_Data/processed_steam.csv'")
+    processed_data.to_csv(os.path.join(processed_data_dir, 'processed_steam.csv'), index=False)
+    print(f"Processed data saved to '{os.path.join(processed_data_dir, 'processed_steam.csv')}'")
     
     X_train, X_test, y_train, y_test = pre.split_data(X, y, test_size=0.2, random_state=42)
     print("\nPreprocessing complete!")
@@ -98,7 +104,7 @@ def main():
     # Model Evaluation
     mse, r2 = md.evaluate_model(model, X_test, y_test)
     mean_mse, mean_r2 = md.cross_validate_model(model, X_train, y_train, cv=5)
-    md.save_model(model, 'pkl/ForecaSteam.pkl') # Trained Model: A serialized (pickled) version of your trained Random Forest model
+    md.save_model(model, os.path.join(model_artefacts_dir, 'ForecaSteam.pkl')) # Trained Model: A serialized (pickled) version of your trained Random Forest model
 
 if __name__ == "__main__":
     main()

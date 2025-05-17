@@ -91,11 +91,10 @@ def fetch_dataset(main_dir: str, data_subdir: str, filename: str) -> Optional[pd
     return data
 
 def main():
-    project_dir = os.path.dirname(os.path.abspath(__file__)) 
-    data_subdir = 'Data'
-    raw_data_filename = 'steam.csv'
-    processed_data_dir = 'Processed_Data'
-    model_artefacts_dir = 'pkl'
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(os.path.dirname(project_dir), 'Data')
+    processed_data_dir = os.path.join(project_dir, 'Processed_Data')
+    model_artefacts_dir = os.path.join(project_dir, 'pkl')
     
     target_variable_name = 'Estimated owners'
     
@@ -110,11 +109,12 @@ def main():
     tuning_iterations = 10 # Keep low for speed, increase for better tuning
     tuning_cv_folds = 2    # Keep low for speed
 
-    os.makedirs(os.path.join(project_dir, data_subdir), exist_ok=True)
+    os.makedirs(os.path.join(project_dir, data_dir), exist_ok=True)
     os.makedirs(os.path.join(project_dir, processed_data_dir), exist_ok=True)
     os.makedirs(os.path.join(project_dir, model_artefacts_dir), exist_ok=True)
 
-    df_original = fetch_dataset(project_dir, data_subdir, raw_data_filename)
+    raw_data_path = os.path.join(data_dir, 'steam.csv')
+    df_original = fetch_dataset(project_dir, data_dir, 'steam.csv')
     if df_original is None:
         print("Exiting due to data loading failure.")
         return
@@ -158,13 +158,13 @@ def main():
 
     # --- Save Preprocessing Artifacts ---
     if scaler is not None:
-        joblib.dump(scaler, os.path.join(project_dir, model_artefacts_dir, 'scaler.pkl'))
-    joblib.dump(X.columns.tolist(), os.path.join(project_dir, model_artefacts_dir, 'feature_columns.pkl'))
-    joblib.dump(final_numeric_cols, os.path.join(project_dir, model_artefacts_dir, 'numeric_columns_final.pkl'))
+        joblib.dump(scaler, os.path.join(model_artefacts_dir, 'scaler.pkl'))
+    joblib.dump(X.columns.tolist(), os.path.join(model_artefacts_dir, 'feature_columns.pkl'))
+    joblib.dump(final_numeric_cols, os.path.join(model_artefacts_dir, 'numeric_columns_final.pkl'))
 
     processed_data_for_csv = X.copy()
     processed_data_for_csv[target_variable_name] = y 
-    processed_csv_path = os.path.join(project_dir, processed_data_dir, 'processed_steam.csv')
+    processed_csv_path = os.path.join(processed_data_dir, 'processed_steam.csv')
     processed_data_for_csv.to_csv(processed_csv_path, index=False)
     print(f"Processed data saved to '{processed_csv_path}'")
     
@@ -218,7 +218,7 @@ def main():
     cv_metric1, cv_metric2 = md.cross_validate_model(model, X_train, y_train, 
                                                      is_classifier=IS_CLASSIFICATION_TASK, cv=3)
     
-    model_save_path = os.path.join(project_dir, model_artefacts_dir, f'ForecaSteam_{model_name_suffix}.pkl')
+    model_save_path = os.path.join(model_artefacts_dir, f'ForecaSteam_{model_name_suffix}.pkl')
     md.save_model(model, model_save_path)
 
 if __name__ == "__main__":

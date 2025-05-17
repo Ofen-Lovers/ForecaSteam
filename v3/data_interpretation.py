@@ -3,12 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns # For potentially nicer plots
 import joblib
+import os
 
 def load():
     # Load trained model and the final feature list used for training
     try:
-        rf_model = joblib.load('pkl/ForecaSteam.pkl')
-        final_feature_columns = joblib.load('pkl/feature_columns.pkl')
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+        pkl_dir = os.path.join(project_dir, 'pkl')
+        rf_model = joblib.load(os.path.join(pkl_dir, 'ForecaSteam.pkl'))
+        final_feature_columns = joblib.load(os.path.join(pkl_dir, 'feature_columns.pkl'))
         # Ensure you load the model trained WITH post-launch features if that's the one you want to interpret
     except FileNotFoundError as e:
         print(f"Error loading files: {e}. Make sure model and feature list are saved.")
