@@ -1,0 +1,164 @@
+Microsoft Windows [Version 10.0.19045.5854]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\deyso\Desktop\test\ForecaSteam>C:/Users/deyso/AppData/Local/Programs/Python/Python313/python.exe c:/Users/deyso/Desktop/test/ForecaSteam/main.py
+Dataset 'steam.csv' found at 'c:\Users\deyso\Desktop\test\ForecaSteam\Data\steam.csv'
+Initial data shape: (71716, 39)
+
+Target variable 'Estimated owners' label encoded.
+Classes: ['0 - 0' '0 - 20000' '100000 - 200000' '1000000 - 2000000'
+ '10000000 - 20000000' '100000000 - 200000000' '20000 - 50000'     
+ '200000 - 500000' '2000000 - 5000000' '20000000 - 50000000'       
+ '50000 - 100000' '500000 - 1000000' '5000000 - 10000000'
+ '50000000 - 100000000']
+Shape after dropping unnecessary columns: (71716, 24)
+
+Missing value summary:
+            missing_count  missing_pct
+Score rank          71674        99.94
+Tags                14014        19.54
+Categories           3407         4.75
+Genres               2439         3.40
+
+Dropped columns >50% missing: ['Score rank']
+
+Initial numeric columns: ['Peak CCU', 'Required age', 'Price', 'DLC count', 
+'Metacritic score', 'User score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average playtime two weeks', 'Median playtime forever', 'Median playtime two weeks']
+Initial categorical columns: ['Release date', 'Supported languages', 'Full audio languages', 'Categories', 'Genres', 'Tags']
+Updated numeric features after simplification: ['Peak CCU', 'Required age', 
+'Price', 'DLC count', 'Metacritic score', 'User score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average 
+playtime two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Num_Audio_Languages', 'Num_Supported_Languages']
+Date features created. Numeric_cols now: ['Peak CCU', 'Required age', 'Price', 'DLC count', 'Metacritic score', 'User score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average playtime two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Num_Audio_Languages', 'Num_Supported_Languages', 'Release_date_year', 'Release_date_month', 'Release_date_day']
+Game_Age feature created. Numeric_cols now: ['Peak CCU', 'Required age', 'Price', 'DLC count', 'Metacritic score', 'User score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average playtime two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Num_Audio_Languages', 'Num_Supported_Languages', 'Release_date_year', 'Release_date_month', 'Release_date_day', 'Game_Age']
+Shape before normalization: (71716, 542)
+Numeric columns before normalization: ['Peak CCU', 'Required age', 'Price', 
+'DLC count', 'Metacritic score', 'User score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average playtime 
+two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Num_Audio_Languages', 'Num_Supported_Languages', 'Release_date_year', 'Release_date_month', 'Release_date_day', 'Game_Age']
+
+
+Normalized numeric columns: ['Peak CCU', 'Required age', 'Price', 'DLC count', 'Metacritic score', 'User score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average playtime two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Num_Audio_Languages', 'Num_Supported_Languages', 'Release_date_year', 'Release_date_month', 'Release_date_day', 'Game_Age']
+Shape after normalization (X): (71716, 542)
+
+ANOVA Feature Selection Results:
+                       Feature      F-value        p-value
+7                     Negative  7595.095432   0.000000e+00
+6                     Positive  5902.013986   0.000000e+00
+9              Recommendations  3933.264663   0.000000e+00
+0                     Peak CCU  2884.205468   0.000000e+00
+16           Release_date_year  1715.202263   0.000000e+00
+19                    Game_Age  1715.202263   0.000000e+00
+4             Metacritic score  1654.359585   0.000000e+00
+10    Average playtime forever   454.338524   0.000000e+00
+1                 Required age   357.910586   0.000000e+00
+11  Average playtime two weeks   341.967401   0.000000e+00
+13   Median playtime two weeks   288.076641   0.000000e+00
+2                        Price   272.249613   0.000000e+00
+15     Num_Supported_Languages   131.253346   0.000000e+00
+12     Median playtime forever    63.990160  2.113307e-168
+14         Num_Audio_Languages    41.137419  1.531400e-105
+3                    DLC count    21.662967   2.154588e-52
+8                 Achievements    14.982368   1.818046e-34
+17          Release_date_month     2.736631   6.916496e-04
+18            Release_date_day     1.106651   3.472241e-01
+5                   User score     0.709691   7.556608e-01
+
+Significant numeric features (p < 0.05): ['Peak CCU', 'Required age', 'Price', 'DLC count', 'Metacritic score', 'Positive', 'Negative', 'Achievements', 
+'Recommendations', 'Average playtime forever', 'Average playtime two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Num_Audio_Languages', 'Num_Supported_Languages', 'Release_date_year', 'Release_date_month', 'Game_Age']
+Non-significant numeric features (removed): ['User score', 'Release_date_day']
+Shape after ANOVA: (71716, 540)
+Numeric columns after ANOVA: ['Peak CCU', 'Required age', 'Price', 'DLC count', 'Metacritic score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average playtime two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Num_Audio_Languages', 'Num_Supported_Languages', 'Release_date_year', 'Release_date_month', 'Game_Age']   
+
+Chi-Square Test for features (p < 0.05):
+
+Significant categorical/binary features kept: 460
+
+Non-significant categorical/binary features dropped: 62
+Shape after Chi-Square: (71716, 478)
+Processed data saved to 'c:\Users\deyso\Desktop\test\ForecaSteam\Processed_Data\processed_steam.csv'
+
+WARNING: The least populated class in y has only 1 member(s). This is too few for stratified splitting with the current test_size. Falling back to non-stratified splitting for this train/test split.
+
+Data split complete: 57372 train samples, 14344 test samples.
+
+--- Preprocessing and Feature Engineering Complete! ---
+
+--- Exploratory Data Analysis (Post-processing) ---
+Shape of final features (X): (57372, 478)
+Columns in final features (X): ['Peak CCU', 'Required age', 'Price', 'DLC count', 'Mac', 'Linux', 'Metacritic score', 'Positive', 'Negative', 'Achievements', 'Recommendations', 'Average playtime forever', 'Average playtime two weeks', 'Median playtime forever', 'Median playtime two weeks', 'Category_Captions_available', 'Category_Co-op', 'Category_Commentary_available', 'Category_Cross-Platform_Multiplayer', 'Category_Full_controller_support', 'Category_In-App_Purchases', 'Category_Includes_Source_SDK', 'Category_Includes_level_editor', 'Category_LAN_Co-op', 'Category_LAN_PvP', 'Category_MMO', 'Category_Mods', 'Category_Mods_(require_HL2)', 'Category_Multi-player', 'Category_Online_Co-op', 'Category_Online_PvP', 'Category_Partial_Controller_Support', 'Category_PvP', 'Category_Remote_Play_Together', 'Category_Remote_Play_on_Phone', 'Category_Remote_Play_on_TV', 'Category_Remote_Play_on_Tablet', 'Category_Shared/Split_Screen', 'Category_Shared/Split_Screen_Co-op', 'Category_Shared/Split_Screen_PvP', 'Category_Single-player', 'Category_Stats', 'Category_Steam_Achievements', 'Category_Steam_Cloud', 'Category_Steam_Leaderboards', 'Category_Steam_Trading_Cards', 'Category_Steam_Turn_Notifications', 'Category_Steam_Workshop', 'Category_SteamVR_Collectibles', 'Category_Tracked_Controller_Support', 'Category_VR_Only', 'Category_VR_Support', 'Category_VR_Supported', 'Category_Valve_Anti-Cheat_enabled', 'Tag_1980s', "Tag_1990's", 'Tag_2.5D', 'Tag_2D', 'Tag_2D_Fighter', 'Tag_2D_Platformer', 'Tag_3D', 'Tag_3D_Fighter', 'Tag_3D_Platformer', 'Tag_3D_Vision', 'Tag_4_Player_Local', 'Tag_4X', 'Tag_6DOF', 'Tag_Abstract', 'Tag_Action', 'Tag_Action_RPG', 'Tag_Action_RTS', 'Tag_Action_Roguelike', 'Tag_Action-Adventure', 'Tag_Addictive', 'Tag_Adventure', 'Tag_Agriculture', 'Tag_Aliens', 'Tag_Alternate_History', 'Tag_America', 'Tag_Animation_And_Modeling', 'Tag_Anime', 'Tag_Arcade', 'Tag_Archery', 'Tag_Arena_Shooter', 'Tag_Artificial_Intelligence', 'Tag_Assassin', 'Tag_Asynchronous_Multiplayer', 'Tag_Atmospheric', 'Tag_Audio_Production', 'Tag_Auto_Battler', 'Tag_Automation', 'Tag_Automobile_Sim', 'Tag_Base-Building', 'Tag_Based_On_A_Novel', 'Tag_Basketball', 'Tag_Battle_Royale', "Tag_Beat_'em_up", 'Tag_Beautiful', 'Tag_Benchmark', 'Tag_Bikes', 'Tag_Blood', 'Tag_Board_Game', 'Tag_Boxing', 'Tag_Building', 'Tag_Bullet_Hell', 'Tag_Bullet_Time', 'Tag_CRPG', 'Tag_Capitalism', 'Tag_Card_Battler', 'Tag_Card_Game', 'Tag_Cartoon', 'Tag_Cartoony', 'Tag_Casual', 'Tag_Cats', 'Tag_Character_Action_Game', 'Tag_Character_Customization', 'Tag_Chess', 'Tag_Choices_Matter', 'Tag_Choose_Your_Own_Adventure', 'Tag_Cinematic', 'Tag_City_Builder', 'Tag_Class-Based', 'Tag_Classic', 'Tag_Clicker', 'Tag_Co-op', 'Tag_Co-op_Campaign', 'Tag_Cold_War', 'Tag_Collectathon', 'Tag_Colony_Sim', 'Tag_Colorful', 'Tag_Combat', 'Tag_Combat_Racing', 'Tag_Comedy', 'Tag_Comic_Book', 'Tag_Competitive', 
+'Tag_Conspiracy', 'Tag_Controller', 'Tag_Conversation', 'Tag_Cooking', 'Tag_Crafting', 'Tag_Creature_Collector', 'Tag_Crime', 'Tag_Crowdfunded', 'Tag_Cult_Classic', 'Tag_Cute', 'Tag_Cyberpunk', 'Tag_Dark', 'Tag_Dark_Comedy', 'Tag_Dark_Fantasy', 'Tag_Dark_Humor', 'Tag_Dating_Sim', 'Tag_Deckbuilding', 'Tag_Demons', 'Tag_Design_And_Illustration', 'Tag_Destruction', 'Tag_Detective', 'Tag_Difficult', 'Tag_Dinosaurs', 'Tag_Diplomacy', 'Tag_Dog', 'Tag_Dragons', 'Tag_Drama', 'Tag_Driving', 'Tag_Dungeon_Crawler', 'Tag_Dungeons_And_Dragons', 'Tag_Dynamic_Narration', 'Tag_Dystopian', 'Tag_Early_Access', 'Tag_Economy', 'Tag_Education', 'Tag_Emotional', 'Tag_Epic', 'Tag_Episodic', 'Tag_Escape_Room', 'Tag_Experience', 'Tag_Experimental', 'Tag_Exploration', 'Tag_FMV', 'Tag_FPS', 'Tag_Faith', 'Tag_Family_Friendly', 'Tag_Fantasy', 'Tag_Farming', 'Tag_Farming_Sim', 'Tag_Fast-Paced', 'Tag_Female_Protagonist', 'Tag_Fighting', 'Tag_First-Person', 'Tag_Fishing', 'Tag_Flight', 'Tag_Football', 'Tag_Free_to_Play', 'Tag_Funny', 'Tag_Futuristic', 'Tag_Gambling', 'Tag_Game_Development', 'Tag_GameMaker', 'Tag_Games_Workshop', 'Tag_Gaming', 'Tag_God_Game', 'Tag_Gore', 'Tag_Gothic', 'Tag_Grand_Strategy', 'Tag_Great_Soundtrack', 'Tag_Grid-Based_Movement', 'Tag_Gun_Customization', 'Tag_Hack_and_Slash', 'Tag_Hacking', 'Tag_Hand-drawn', 'Tag_Heist', 'Tag_Hentai', 'Tag_Hero_Shooter', 'Tag_Hex_Grid', 'Tag_Hidden_Object', 'Tag_Historical', 'Tag_Horror', 'Tag_Horses', 'Tag_Hunting', 'Tag_Idler', 'Tag_Illuminati', 'Tag_Immersive', 'Tag_Immersive_Sim', 'Tag_Indie', 'Tag_Intentionally_Awkward_Controls', 'Tag_Interactive_Fiction', 'Tag_Inventory_Management', 'Tag_Investigation', 'Tag_Isometric', 'Tag_JRPG', 'Tag_Jump_Scare', 'Tag_Kickstarter', 'Tag_LEGO', 'Tag_LGBTQ+', 'Tag_Level_Editor', 'Tag_Life_Sim', 'Tag_Linear', 'Tag_Local_Co-Op', 'Tag_Local_Multiplayer', 'Tag_Logic', 'Tag_Loot', 'Tag_Looter_Shooter', 'Tag_Lore-Rich', 'Tag_Lovecraftian', 'Tag_MMORPG', 'Tag_MOBA', 'Tag_Magic', 'Tag_Management', 'Tag_Mars', 'Tag_Martial_Arts', 'Tag_Massively_Multiplayer', 'Tag_Masterpiece', 'Tag_Match_3', 'Tag_Mature', 'Tag_Mechs', 'Tag_Medieval', 'Tag_Memes', 'Tag_Metroidvania', 'Tag_Military', 'Tag_Minigames', 'Tag_Minimalist', 'Tag_Mining', 'Tag_Mod', 'Tag_Moddable', 'Tag_Modern', 'Tag_Motorbike', 'Tag_Mouse_only', 'Tag_Multiplayer', 'Tag_Multiple_Endings', 'Tag_Music', 'Tag_Music-Based_Procedural_Generation', 'Tag_Musou', 'Tag_Mystery', 'Tag_Mystery_Dungeon', 'Tag_Mythology', 'Tag_NSFW', 'Tag_Narration', 'Tag_Narrative', 'Tag_Nature', 'Tag_Naval', 'Tag_Naval_Combat', 'Tag_Ninja', 'Tag_Noir', 'Tag_Nonlinear', 'Tag_Nostalgia', 'Tag_Nudity', 'Tag_Offroad', 'Tag_Old_School', 'Tag_On-Rails_Shooter', 'Tag_Online_Co-Op', 'Tag_Open_World', 'Tag_Open_World_Survival_Craft', 'Tag_Otome', 'Tag_Outbreak_Sim', 'Tag_Parkour', 'Tag_Parody', 'Tag_Party', 'Tag_Party_Game', 'Tag_Party-Based_RPG', 'Tag_Perma_Death', 'Tag_Philosophical', 'Tag_Photo_Editing', 'Tag_Physics', 'Tag_Pirates', 'Tag_Pixel_Graphics', 'Tag_Platformer', 'Tag_Point_And_Click', 'Tag_Political', 'Tag_Political_Sim', 'Tag_Politics', 'Tag_Post-apocalyptic', 'Tag_Precision_Platformer', 'Tag_Procedural_Generation', 'Tag_Programming', 'Tag_Psychedelic', 'Tag_Psychological', 'Tag_Psychological_Horror', 'Tag_Puzzle', 'Tag_Puzzle-Platformer', 'Tag_PvE', 'Tag_PvP', 'Tag_Quick-Time_Events', 'Tag_RPG', 'Tag_RPGMaker', 'Tag_RTS', 'Tag_Racing', 'Tag_Real_Time_Tactics', 'Tag_Real-Time', 'Tag_Real-Time_with_Pause', 'Tag_Realistic', 'Tag_Reboot', 'Tag_Relaxing', 'Tag_Remake', 'Tag_Replay_Value', 'Tag_Resource_Management', 'Tag_Retro', 'Tag_Rhythm', 'Tag_Robots', 'Tag_Rogue-like', 'Tag_Rogue-lite', 
+'Tag_Roguelike_Deckbuilder', 'Tag_Romance', 'Tag_Rome', 'Tag_Runner', 'Tag_Sailing', 'Tag_Sandbox', 'Tag_Satire', 'Tag_Sci-fi', 'Tag_Science', 'Tag_Score_Attack', 'Tag_Sequel', 'Tag_Sexual_Content', "Tag_Shoot_'Em_Up", 'Tag_Shooter', 'Tag_Short', 'Tag_Side_Scroller', 'Tag_Silent_Protagonist', 'Tag_Simulation', 'Tag_Singleplayer', 'Tag_Skiing', 'Tag_Sniper', 'Tag_Snow', 'Tag_Snowboarding', 'Tag_Soccer', 'Tag_Social_Deduction', 'Tag_Software', 'Tag_Software_Training', 'Tag_Sokoban', 'Tag_Solitaire', 'Tag_Souls-like', 'Tag_Soundtrack', 'Tag_Space', 'Tag_Space_Sim', 'Tag_Spaceships', 'Tag_Spectacle_fighter', 'Tag_Spelling', 'Tag_Split_Screen', 'Tag_Sports', 'Tag_Stealth', 'Tag_Steampunk', 'Tag_Story_Rich', 'Tag_Strategy', 'Tag_Strategy_RPG', 'Tag_Stylized', 'Tag_Submarine', 'Tag_Superhero', 'Tag_Supernatural', 'Tag_Surreal', 'Tag_Survival', 'Tag_Survival_Horror', 'Tag_Swordplay', 'Tag_Tabletop', 'Tag_Tactical', 'Tag_Tactical_RPG', 'Tag_Tanks', 'Tag_Team-Based', 'Tag_Text-Based', 'Tag_Third_Person', 'Tag_Third-Person_Shooter', 'Tag_Thriller', 'Tag_Time_Attack', 'Tag_Time_Management', 'Tag_Time_Manipulation', 'Tag_Time_Travel', 
+'Tag_Top-Down', 'Tag_Top-Down_Shooter', 'Tag_Touch-Friendly', 'Tag_Tower_Defense', 'Tag_TrackIR', 'Tag_Trading', 'Tag_Trading_Card_Game', 'Tag_Traditional_Roguelike', 'Tag_Trains', 'Tag_Transhumanism', 'Tag_Transportation', 'Tag_Trivia', 'Tag_Turn-Based', 'Tag_Turn-Based_Combat', 'Tag_Turn-Based_Strategy', 'Tag_Turn-Based_Tactics', 'Tag_Tutorial', 'Tag_Twin_Stick_Shooter', 'Tag_Typing', 'Tag_Underground', 'Tag_Underwater', 'Tag_Unforgiving', 'Tag_Utilities', 'Tag_VR', 'Tag_VR_Only', 'Tag_Vampire', 'Tag_Vehicular_Combat', 'Tag_Video_Production', 'Tag_Vikings', 'Tag_Villain_Protagonist', 'Tag_Violent', 
+'Tag_Visual_Novel', 'Tag_Voxel', 'Tag_Walking_Simulator', 'Tag_War', 'Tag_Wargame', 'Tag_Warhammer_40K', 'Tag_Web_Publishing', 'Tag_Well-Written', 'Tag_Werewolves', 'Tag_Western', 'Tag_Word_Game', 'Tag_World_War_I', 'Tag_World_War_II', 'Tag_Wrestling', 'Tag_Zombies', 'Tag_e-sports', 'Genre_Action', 'Genre_Adventure', 'Genre_Animation_And_Modeling', 'Genre_Audio_Production', 'Genre_Casual', 'Genre_Design_And_Illustration', 'Genre_Early_Access', 'Genre_Education', 'Genre_Free_to_Play', 'Genre_Gore', 'Genre_Indie', 'Genre_Massively_Multiplayer', 'Genre_Movie', 'Genre_Nudity', 'Genre_Photo_Editing', 'Genre_RPG', 'Genre_Racing', 'Genre_Simulation', 'Genre_Software_Training', 'Genre_Sports', 'Genre_Strategy', 'Genre_Utilities', 'Genre_Violent', 'Num_Audio_Languages', 'Num_Supported_Languages', 'Release_date_year', 'Release_date_month', 'Game_Age']
+
+First 5 rows of final features (X):
+       Peak CCU  Required age  ...  Release_date_month  Game_Age
+64183 -0.024282     -0.145418  ...            0.973058 -0.970605
+7568  -0.024282     -0.145418  ...           -1.607503  0.468787
+69381 -0.024282     -0.145418  ...           -1.320774 -1.330453
+53734 -0.024282     -0.145418  ...            0.973058  1.188482
+2593  -0.024282     -0.145418  ...           -0.173858 -0.970605
+
+[5 rows x 478 columns]
+
+Summary statistics for numeric columns in final features (X):
+           Peak CCU  Required age  ...  Release_date_month      Game_Age
+count  57372.000000  57372.000000  ...        57372.000000  57372.000000    
+mean       0.000428     -0.000656  ...           -0.003806     -0.000737    
+std        1.078353      0.997047  ...            1.000886      1.002886    
+min       -0.024282     -0.145418  ...           -1.607503     -1.330453    
+25%       -0.024282     -0.145418  ...           -1.034045     -0.610757    
+50%       -0.024282     -0.145418  ...            0.112871     -0.250909    
+75%       -0.024109     -0.145418  ...            0.973058      0.468787    
+max      150.423062      8.744934  ...            1.546516      8.025591    
+
+[8 rows x 18 columns]
+c:\Users\deyso\Desktop\test\ForecaSteam\main.py:42: FutureWarning: Allowing 
+arbitrary scalar fill_value in SparseDtype is deprecated. In a future version, the fill_value must be a valid value for the SparseDtype.subtype.        
+  print("\nTotal missing values remaining in final features (X):", df.isnull().sum().sum())
+
+Total missing values remaining in final features (X): 0
+--- End of EDA ---
+
+--- Hyperparameter Tuning ---
+
+Tuning RandomForestRegressor hyperparameters...
+Fitting 2 folds for each of 10 candidates, totalling 20 fits
+Best hyperparameters found: {'max_depth': None, 'max_features': 0.5, 'min_samples_leaf': 2, 'min_samples_split': 10, 'n_estimators': 445}
+Best CV MSE: 3.6896
+
+--- Model Training ---
+Random Forest model trained successfully with parameters: {'n_estimators': 445, 'max_depth': None, 'min_samples_split': 10, 'min_samples_leaf': 2, 'max_features': 0.5, 'random_state': 42, 'n_jobs': -1}.
+
+Top 20 Feature Importances:
+                          feature  importance
+8                        Negative    0.301328
+7                        Positive    0.167072
+13        Median playtime forever    0.060945
+11       Average playtime forever    0.055829
+2                           Price    0.028892
+10                Recommendations    0.027773
+475             Release_date_year    0.016891
+0                        Peak CCU    0.016574
+477                      Game_Age    0.016431
+9                    Achievements    0.014054
+476            Release_date_month    0.012725
+474       Num_Supported_Languages    0.008550
+458            Genre_Free_to_Play    0.008502
+222                     Tag_Indie    0.008062
+191              Tag_Free_to_Play    0.007961
+6                Metacritic score    0.004286
+3                       DLC count    0.004218
+473           Num_Audio_Languages    0.003812
+460                   Genre_Indie    0.003698
+45   Category_Steam_Trading_Cards    0.003269
+
+--- Model Evaluation on Test Set ---
+Model Evaluation on Test Set:
+Mean Squared Error (MSE): 3.6195
+R² Score: 0.5407
+
+--- Cross-Validation on Training Set ---
+Cross-validation MSE scores: [3.65790861 3.71264086 3.61899128]
+Mean CV MSE: 3.6632
+Mean CV R²: 0.5344
+Model saved to c:\Users\deyso\Desktop\test\ForecaSteam\pkl\ForecaSteam.pkl successfully!
