@@ -138,15 +138,13 @@ def seperate_dates(df):
     
     return df
 
-def normalize_data(df, target_variable, numeric_cols):
-    X = df.drop(columns=[target_variable])  # Drop target variable to separate features
-
+def normalize_data(X, numeric_cols):
     scaler = StandardScaler()
     X[numeric_cols] = scaler.fit_transform(X[numeric_cols])
 
     print("\nNormalized numeric columns.")
 
-    return X, scaler
+    return scaler
 
 def split_data(X, y, test_size=0.2, random_state=42):
     # 80% training set/20% test set, random seed of 42

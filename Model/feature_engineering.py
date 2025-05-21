@@ -40,7 +40,7 @@ def anova_test_numeric(numeric_cols, X, y):
 
 def chi_square_test(df, target, numeric_cols, X):
     # Multi-hot columns
-    multi_hot_cols = [col for col in df.columns if col not in numeric_cols and col != target]
+    multi_hot_cols = [col for col in X.columns if col not in numeric_cols and col != target]
     
     # category_cols = [col for col in df.columns if col.startswith('Category')]
     # tag_cols = [col for col in df.columns if col.startswith('Tag')]
@@ -53,7 +53,7 @@ def chi_square_test(df, target, numeric_cols, X):
     non_significant_features = []
 
     for feature in multi_hot_cols:  # You can change this to loop through other lists like category_cols, etc.
-        contingency_table = pd.crosstab(df[feature], df[target])
+        contingency_table = pd.crosstab(X[feature], df[target])
         chi2, p, dof, expected = chi2_contingency(contingency_table)
 
         # print(f"Chi-Square Test for {feature}:")

@@ -12,9 +12,12 @@ def load_data(filepath):
     return pd.read_csv(filepath)
 
 def get_target_variable(target_variable):
-    le = LabelEncoder()
+    ranges = target_variable.str.replace(',', '').str.extract(r'(\d+)\s*-\s*(\d+)').astype(int)
 
-    return le.fit_transform(target_variable) 
+    # Compute the midpoint of each range
+    midpoints = ranges.mean(axis=1)
+
+    return midpoints
 
 def EDA(df, numeric_cols):
     numeric_cols = [col for col in numeric_cols if col in df.columns]
@@ -52,26 +55,27 @@ def main():
     # Set the target variable
     target_variable = 'Estimated owners'
     y = get_target_variable(df[target_variable])
+    X = df.drop(columns=[target_variable])  # Drop target variable to separate features
     
-    df = pre.drop_unnecessary_columns(df)
-    print("Shape after dropping columns:", df.shape)    #Peak at columns after dropping
-    print(df.head())
+    X = pre.drop_unnecessary_columns(X)
+    print("Shape after dropping columns:", X.shape)
+    print(X.head())
 
-    pre.find_null_values(df)
-    df = pre.drop_high_missing_columns(df, threshold=50)
-    numeric_cols, categorical_cols = pre.separate_column_types(df)
-    df = pre.preprocess_dates(df)
-    df = pre.impute_missing_values(df, numeric_cols, categorical_cols)
-    df = pre.convert_platform_booleans(df)
-    df = pre.preprocess_multilabel_columns(df)
-    df, numeric_cols = pre.simplify_multihot_columns(df, numeric_cols)
-    df = pre.seperate_dates(df)
-    X, scaler = pre.normalize_data(df, target_variable, numeric_cols)
+    pre.find_null_values(X)
+    X = pre.drop_high_missing_columns(X, threshold=50)
+    numeric_cols, categorical_cols = pre.separate_column_types(X)
+    X = pre.preprocess_dates(X)
+    X = pre.impute_missing_values(X, numeric_cols, categorical_cols)
+    X = pre.convert_platform_booleans(X)
+    X = pre.preprocess_multilabel_columns(X)
+    X, numeric_cols = pre.simplify_multihot_columns(X, numeric_cols)
+    X = pre.seperate_dates(X)
+    scaler = pre.normalize_data(X, numeric_cols)
 
     #Feature Engineering
     X = fe.anova_test_numeric(numeric_cols, X, y)
     X = fe.chi_square_test(df, target_variable, numeric_cols, X)
-    print("\nShape after dropping columns:", df.shape)
+    print("\nShape after dropping columns:", X.shape)
 
     joblib.dump(scaler, 'pkl/scaler.pkl') #Scaler Object: Serialized StandardScaler (or other scaler) used during training
     joblib.dump(X.columns.tolist(), 'pkl/feature_columns.pkl') #Feature List: List of column names the model expects as input

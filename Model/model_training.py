@@ -22,10 +22,12 @@ def cross_validate_model(model, X_train, y_train, cv=5):
     # Convert negative MSE to positive MSE
     mse_scores = -scores
     mean_mse = np.mean(mse_scores)
+    rmse = np.sqrt(mean_mse)
     mean_r2 = np.mean(cross_val_score(model, X_train, y_train, cv=cv, scoring='r2'))
 
     print(f"Cross-validation MSE scores: {mse_scores}")
     print(f"Mean MSE: {mean_mse}")
+    print(f"Root Mean MSE: {rmse}")
     print(f"Mean R²: {mean_r2}")
     
     return mean_mse, mean_r2
