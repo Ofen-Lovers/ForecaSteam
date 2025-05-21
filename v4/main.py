@@ -5,8 +5,6 @@ import Model.feature_engineering as fe
 import Model.model_training as md
 import joblib
 import os
-import kagglehub
-import shutil
 from typing import Optional, List, Tuple
 
 # --- Configuration ---
@@ -67,34 +65,8 @@ def fetch_dataset(main_dir: str, data_subdir: str, filename: str) -> Optional[pd
         print(f"Dataset '{filename}' found at '{filepath}'")
         data = load_data(filepath)
     else:
-        print(f"File '{filepath}' not found, attempting to download 'mexwell/steamgames' from Kaggle...")
-        try:
-            download_path = kagglehub.dataset_download('mexwell/steamgames')
-            source_file_to_copy = None
-            possible_filenames = ['steam.csv', 'games.csv'] 
-            
-            for root, _, files in os.walk(download_path):
-                for file_in_archive in files:
-                    if file_in_archive.lower() in possible_filenames:
-                        source_file_to_copy = os.path.join(root, file_in_archive)
-                        print(f"Found CSV in Kaggle download: {source_file_to_copy}")
-                        break
-                if source_file_to_copy:
-                    break
-            
-            if source_file_to_copy and os.path.exists(source_file_to_copy):
-                shutil.copyfile(source_file_to_copy, filepath)
-                print(f"Dataset copied to '{filepath}'")
-                data = load_data(filepath)
-            else:
-                print(f"Could not find a suitable CSV file (e.g., 'steam.csv') in downloaded path: {download_path}")
-                raise FileNotFoundError("CSV not found after Kaggle download attempt.")
-        except Exception as e:
-            print(f"Error during Kaggle download or file handling: {e}")
-            print(f"Please ensure '{filename}' is manually placed in '{data_dir}' or check Kaggle setup.")
-            return None
-            
-    return data
+        print(f"File '{filepath}' not found. Please ensure the file exists at this path.")
+        return None
 
 def main():
     # project_dir will be .../ForecaSteam/v4/ if this main.py is in v4/
